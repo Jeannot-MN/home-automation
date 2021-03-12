@@ -1,0 +1,63 @@
+package jmn.iot;
+
+import jmn.iot.model.Device;
+import jmn.iot.model.Room;
+import jmn.iot.model.Sensor;
+import jmn.iot.repository.RoomRepository;
+import jmn.iot.service.MQTTService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+@Component
+public class Seeder implements CommandLineRunner {
+
+    @Autowired
+    private RoomRepository roomRepository;
+
+    @Autowired
+    private MQTTService mqttService;
+
+    @Override
+    public void run(String... args) throws Exception {
+
+        if (((List<Room>) roomRepository.findAll()).isEmpty()) {
+            Room livingRoom = new Room();
+            livingRoom.setPrimaryId("living-room");
+            livingRoom.setName("Living Room");
+            livingRoom.setIcon("couch");
+
+            Set<Device> livingRoomDevices = new HashSet<Device>();
+            livingRoomDevices.add(new Device("Light", 0));
+            livingRoomDevices.add(new Device("Fan", 0));
+
+            Set<Sensor> livingRoomSensors = new HashSet<>();
+            livingRoomSensors.add(new Sensor(1L, "Temperature Sensor"));
+            livingRoomSensors.add(new Sensor(2L, "Humidity Sensor"));
+
+            livingRoom.setDevices(livingRoomDevices);
+            livingRoom.setSensors(livingRoomSensors);
+
+            roomRepository.save(livingRoom);
+
+
+            Room bedRoom = new Room();
+            bedRoom.setPrimaryId("bedroom");
+            bedRoom.setName("Bed Room");
+            bedRoom.setIcon("bed");
+
+            Set<Device> bedRoomDevices = new HashSet<Device>();
+            bedRoomDevices.add(new Device("Light", 0));
+            bedRoomDevices.add(new Device("Fan", 0));
+            bedRoomDevices.add(new Device("Alarm", 0));
+
+            bedRoom.setDevices(bedRoomDevices);
+
+            roomRepository.save(bedRoom);
+        }
+    }
+}
