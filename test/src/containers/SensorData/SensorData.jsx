@@ -6,6 +6,7 @@ import {NavLink} from "react-router-dom";
 import classes from "../RoomsDashboard/RoomDevices/RoomDevices.module.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faChevronLeft} from "@fortawesome/free-solid-svg-icons";
+import Chart from 'chart.js/auto';
 import {Line} from 'react-chartjs-2';
 
 export class SensorData extends Component {
@@ -18,14 +19,8 @@ export class SensorData extends Component {
     };
 
     componentDidMount() {
-        if (
-            !!this.props.match &&
-            !!this.props.match.params &&
-            !!this.props.match.params.id
-        ) {
-            const sensorId = this.props.match.params.id;
-            this.props.fetchSensorReadings(sensorId);
-        }
+        const sensorId = window.location.pathname.split('/').at(-1);
+        this.props.fetchSensorReadings(sensorId);
     }
 
     is_empty = (obj) => {
@@ -52,13 +47,12 @@ export class SensorData extends Component {
                 <Line
                     data={{
                         labels: this.props.readings.map(reading => {
-                            console.log(this.props.match.params.id);
 
                             return `${reading.date[3]}:${reading.date[4]}:${reading.date[5]}`;
                         }),
                         datasets: [
                             {
-                                label: `${this.props.match.params.id === '1'? "Temperature in Celsius": "Humidity %"}`,
+                                label: `${window.location.pathname.split('/').at(-1) === '1'? "Temperature in Celsius": "Humidity %"}`,
                                 data: this.props.readings.map(reading => reading.reading),
                                 borderColor: '#ff0000',
                                 pointBorderColor: '#ff0000',
@@ -75,11 +69,11 @@ export class SensorData extends Component {
                             }
                         ]
                     }}
-                    options={{
+                    /*options={{
                         responsive: true,
                         title: {
                             display: true,
-                            text: `${this.props.match.params.id === '1'? "Temperature Sensor": "Humidity Sensor"}`,
+                            text: `${window.location.pathname.split('/').at(-1) === '1'? "Temperature Sensor": "Humidity Sensor"}`,
                         },
                         maintainAspectRatio: false,
                         bezierCurve: false,
@@ -104,7 +98,7 @@ export class SensorData extends Component {
                                 },
                             ],
                         }
-                    }}
+                    }}*/
                 />
             </div>
         )

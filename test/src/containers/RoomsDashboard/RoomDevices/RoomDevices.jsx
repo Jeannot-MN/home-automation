@@ -25,17 +25,9 @@ export class RoomDevices extends Component {
     };
 
     componentDidMount() {
-        if (
-            !!this.props.match &&
-            !!this.props.match.params &&
-            !!this.props.match.params.id &&
-            !!this.props.fetchRoomDevices &&
-            !!this.props.fetchRoomSensors
-        ) {
-            const roomId = this.props.match.params.id;
-            this.props.fetchRoomDevices(roomId);
-            this.props.fetchRoomSensors(roomId);
-        }
+        const roomId = window.location.pathname.split('/').at(-1);
+        this.props.fetchRoomDevices(roomId);
+        this.props.fetchRoomSensors(roomId);
     }
 
     /**
@@ -84,15 +76,17 @@ export class RoomDevices extends Component {
                     })}
                     {this.is_empty(this.props.sensors) ? null : this.props.sensors.map(sensor => {
                         return (
-                            <div
-                                key={sensor.primaryId}
-                                className={classes.Column}
-                                onClick={() => this.props.history.push(`/sensor/${sensor.primaryId}`)}
-                            >
-                                <Sensor
-                                    sensor={sensor}
-                                />
-                            </div>
+                            <NavLink key={sensor.primaryId} to={`/sensor/${sensor.primaryId}`}>
+                                <div
+                                    key={sensor.primaryId}
+                                    className={classes.Column}
+                                    // onClick={() => this.props.history.push(`/sensor/${sensor.primaryId}`)}
+                                >
+                                    <Sensor
+                                        sensor={sensor}
+                                    />
+                                </div>
+                            </NavLink>
                         );
                     })}
 

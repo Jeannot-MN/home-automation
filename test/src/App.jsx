@@ -23,9 +23,9 @@ function App() {
       flexDirection: 'column'
     }}>
       <Routes>
-        <Route path="/room/:id" element={AsyncRoomsDevices} />
+        <Route path="/room/:id" element={<AsyncRoomsDevices/>} />
         <Route path="/"  element={<RoomsDashboard/>} />
-        <Route path="/sensor/:id" element={AsyncSensorData}/>
+        <Route path="/sensor/:id" element={<AsyncSensorData/>}/>
       </Routes>
     </Layout>
   );

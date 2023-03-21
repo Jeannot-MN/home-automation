@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import { fetchRooms } from "./../../store/rooms/rooms.actions";
 import Room from "../../components/Rooms/Room.jsx";
+import {NavLink} from "react-router-dom";
 
 import classes from "./RoomsDashboard.module.scss";
 
@@ -13,16 +14,16 @@ export class RoomsDashboard extends Component {
   };
 
   componentDidMount() {
-    console.log("Hello world")
     if (this.props.fetchRooms) {
       this.props.fetchRooms();
     }
   }
 
-  onClickRoomHandler = roomId => {
+  /*onClickRoomHandler = roomId => {
     // Go to room page
+    console.log("I am clicked!!!!!!!")
     this.props.history.push(`/room/${roomId}`);
-  };
+  };*/
 
   render() {
     if (!this.props.rooms.length) return null;
@@ -36,15 +37,17 @@ export class RoomsDashboard extends Component {
                 data-test={`room-card-${room.primaryId}`}
                 key={room.primaryId}
                 className={classes.Column}
-                onClick={() => this.onClickRoomHandler(room.primaryId)}
+                // onClick={() => this.onClickRoomHandler(room.primaryId)}
               >
-                <Room
-                  id={room.primaryId}
-                  name={room.name}
-                  icon={room.icon}
-                  devicesCount={room.devices.length}
-                  sensorsCount={room.sensors.length}
-                />
+                <NavLink to={`/room/${room.primaryId}`}>
+                  <Room
+                      id={room.primaryId}
+                      name={room.name}
+                      icon={room.icon}
+                      devicesCount={room.devices.length}
+                      sensorsCount={room.sensors.length}
+                  />
+                </NavLink>
               </div>
             )
           }
