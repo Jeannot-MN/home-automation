@@ -1,0 +1,114 @@
+#include <WiFi.h>
+#include <PubSubClient.h>
+#include <DHT.h>
+char* ssid = "Musafiri";
+char* password = "MusafiriC408";
+IPAddress ip(192, 168, 1, 118);
+
+// 192.168.1.118
+
+const int mqttPort = 1883;
+const char* mqttUser = "roger";
+const char* mqttPassword = "password";
+const int MOTION_SENSOR = 27;
+const int BUZZER = 25;
+int motionDetected = 0;
+int pirState = LOW;
+int emailSent = 0;
+int alarmActive = 0;
+#define DHTPIN 4
+#define DHTTYPE DHT11
+#define MQTT_TEMP_TOPIC "HOUSE_TEMPERATURE"
+#define MQTT_HUM_TOPIC "HOUSE_HUMIDITY"
+DHT dht(DHTPIN, DHTTYPE);
+WiFiClient espClient;
+PubSubClient client(espClient);
+void callback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("Message received in topic: ");
+  Serial.print(topic);
+  Serial.print(" length is:");
+  Serial.println(length);
+  Serial.print("Data Received From Broker:");
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)payload[i]);
+  }
+  Serial.println();
+  Serial.println("-----------------------");
+  Serial.println();
+  if (strcmp(topic, "BEDROOM_ALARM") == 0)
+    alarmActive = alarmActive == 1 ? 0 : 1;
+  if (alarmActive == 0) {
+    digitalWrite(BUZZER, LOW);
+    emailSent = 0;
+  }
+}
+unsigned long previousMillis = 0;
+const long interval = 20000;
+void setup() {
+  Serial.begin(9600);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.println("Connecting to WiFi..");
+  }
+  Serial.println("Connected to the WiFi network");
+  client.setServer(ip, mqttPort);
+  client.setCallback(callback);
+  while (!client.connected()) {
+    Serial.println("Connecting to MQTT...");
+    if (client.connect("Home_Client", mqttUser, mqttPassword)) {
+      Serial.println("connected");
+    } else {
+      Serial.print("failed with state ");
+      Serial.print(client.state());
+      delay(2000);
+    }
+  }
+  pinMode(BUZZER, OUTPUT);  // declare LED as output
+  pinMode(MOTION_SENSOR, INPUT);
+
+  dht.begin();
+}
+void loop() {
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+
+
+    float hum = dht.readHumidity();
+    Serial.println(String(hum).c_str());
+
+    float temp = dht.readTemperature();
+    Serial.println(String(temp).c_str());
+    if (isnan(temp) || isnan(hum)) {
+      Serial.println(F("Failed to read from DHT sensor!"));
+      return;
+    }
+    if (client.publish(MQTT_TEMP_TOPIC, String(temp).c_str())) {
+      Serial.println("Temperature sent");
+    }
+    if (client.publish(MQTT_HUM_TOPIC, String(hum).c_str())) {
+      Serial.println("Humidity sent");
+    }
+  }
+  motionDetected = digitalRead(MOTION_SENSOR);
+  if (motionDetected == HIGH && alarmActive == 1) {
+    Serial.println("Motion ended!");
+    digitalWrite(BUZZER, HIGH);
+    if (pirState == LOW) {
+      if (emailSent == 0) {
+        if (client.publish("HOUSE_ALARM", "")) {
+          Serial.println("Email sent");
+          emailSent = 1;
+        }
+      }
+      pirState = HIGH;
+    }
+  } else {
+    if (pirState == HIGH) {
+      Serial.println("Motion ended!");
+      pirState = LOW;
+    }
+  }
+  client.loop();
+}

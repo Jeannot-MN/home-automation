@@ -1,0 +1,74 @@
+#include <WiFi.h>
+#include <PubSubClient.h>
+const char* ssid = "Musafiri";
+const char* password = "MusafiriC408";
+IPAddress ip (192, 168, 1, 118);
+
+
+const int mqttPort = 1883;
+const char* mqttUser = "roger";
+const char* mqttPassword = "password";
+const int LIVING_ROOM_LIGHT = 27;
+const int LIVING_ROOM_FAN = 26;
+const int BEDROOM_LIGHT = 25;
+const int BEDROOM_FAN = 33;
+WiFiClient espClient;
+PubSubClient client(espClient);
+void callback(char* topic, byte* payload, unsigned int length) {
+ Serial.print("Message received in topic: ");
+ Serial.print(topic);
+ Serial.print(" length is:");
+ Serial.println(length);
+ Serial.print("Data Received From Broker:");
+ for (int i = 0; i < length; i++) {
+ Serial.print((char)payload[i]);
+ }
+ Serial.println();
+ Serial.println("-----------------------");
+ Serial.println();
+ if(strcmp(topic, "LIVING_ROOM_LIGHT") == 0)
+ digitalWrite(LIVING_ROOM_LIGHT, !digitalRead(LIVING_ROOM_LIGHT));
+ else if(strcmp(topic, "LIVING_ROOM_FAN") == 0)
+ digitalWrite(LIVING_ROOM_FAN, !digitalRead(LIVING_ROOM_FAN));
+ else if(strcmp(topic, "BEDROOM_LIGHT") == 0)
+ digitalWrite(BEDROOM_LIGHT, !digitalRead(BEDROOM_LIGHT));
+ else if (strcmp(topic, "BEDROOM_FAN") == 0)
+ digitalWrite(BEDROOM_FAN, !digitalRead(BEDROOM_FAN));
+}
+void setup() {
+ Serial.begin(9600);
+ WiFi.begin(ssid, password);
+ while (WiFi.status() != WL_CONNECTED) {
+ delay(500);
+ Serial.println("Connecting to WiFi..");
+ }
+ Serial.println("Connected to the WiFi network");
+ client.setServer(ip, mqttPort);
+ client.setCallback(callback);
+ while (!client.connected()) {
+ Serial.println("Connecting to MQTT...");
+ if (client.connect("ESP32Client", mqttUser, mqttPassword )) {
+ Serial.println("connected");
+ } else {
+ Serial.print("failed with state ");
+ Serial.print(client.state());
+ delay(2000);
+ }
+ }
+ client.subscribe("LIVING_ROOM_LIGHT");
+ client.subscribe("LIVING_ROOM_FAN");
+ client.subscribe("BEDROOM_LIGHT");
+ client.subscribe("BEDROOM_FAN");
+
+ pinMode(LIVING_ROOM_LIGHT, OUTPUT);
+ pinMode(LIVING_ROOM_FAN, OUTPUT);
+ pinMode(BEDROOM_LIGHT, OUTPUT);
+ pinMode(BEDROOM_FAN, OUTPUT);
+ digitalWrite(LIVING_ROOM_LIGHT, HIGH);
+ digitalWrite(LIVING_ROOM_FAN, HIGH);
+ digitalWrite(BEDROOM_LIGHT, HIGH);
+ digitalWrite(BEDROOM_FAN, HIGH);
+}
+void loop() {
+ client.loop();
+}
