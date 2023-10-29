@@ -48,18 +48,6 @@ public class Seeder implements CommandLineRunner {
             livingRoomSensors.add(new Sensor(1L, "Temperature Sensor"));
             livingRoomSensors.add(new Sensor(2L, "Humidity Sensor"));
 
-            if(sensorReadingRepository.findAll().isEmpty()){
-                for (int sensorId = 1; sensorId <=2 ; sensorId++) {
-                    for (int r = 0; r < 100; r++) {
-                        SensorReading reading = new SensorReading();
-                        reading.setDate(LocalDateTime.now().minusMinutes(r));
-                        reading.setSensorId((long) sensorId);
-                        reading.setReading((double) (45 + rand.nextInt(5)));
-                        sensorReadingRepository.save(reading);
-                    }
-                }
-            }
-
             livingRoom.setDevices(livingRoomDevices);
             livingRoom.setSensors(livingRoomSensors);
 

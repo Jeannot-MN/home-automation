@@ -130,6 +130,7 @@ export const fetchSensorReadingsFailed = error => ({
 });
 
 /** Device Switch Toggle Actions */
+// Once the client press a switch  from the client application by sending an id in the request
 export const toggleDeviceSwitch = deviceId => dispatch => {
   dispatch(toggleDeviceSwitchStart());
 
